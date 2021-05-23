@@ -4,15 +4,22 @@
   "description": "",
   "main": "test.js",
   "scripts": {
-    "main": "electron -r ./scripts/BabelRegister src/electron/main.ts"
+    "main": "electron -r ./scripts/BabelRegister src/electron/main.ts",
+    "renderer": "cross-env NODE_ENV=development webpack serve --config ./config/webpack.config.dev.renderer.babel.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@reduxjs/toolkit": "^1.5.1",
     "@tensorflow/tfjs-node": "^3.6.1",
     "async": "^3.2.0",
     "electron": "^12.0.9",
+    "promise-fs": "^2.1.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-redux": "^7.2.4",
+    "react-router-dom": "^5.2.0",
     "sharp": "^0.28.2"
   },
   "devDependencies": {
@@ -24,11 +31,26 @@
     "@babel/preset-react": "^7.12.7",
     "@babel/preset-typescript": "^7.12.7",
     "@babel/register": "^7.12.1",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
     "@types/async": "^3.2.6",
+    "@types/promise-fs": "^2.1.1",
+    "@types/react-dom": "^17.0.5",
+    "@types/react-router-dom": "^5.1.7",
+    "@types/sharp": "^0.28.1",
     "babel-loader": "^8.2.2",
     "babel-plugin-dev-expression": "^0.2.2",
     "babel-plugin-transform-react-remove-prop-types": "^0.4.24",
     "core-js": "^3.12.1",
-    "typescript": "^4.2.4"
+    "cross-env": "^7.0.3",
+    "electron-debug": "^3.2.0",
+    "electron-devtools-installer": "^3.2.0",
+    "electron-log": "^4.3.5",
+    "electron-updater": "^4.3.9",
+    "load": "^1.0.2",
+    "typescript": "^4.2.4",
+    "webpack": "^5.37.1",
+    "webpack-cli": "^4.7.0",
+    "webpack-dev-server": "^3.11.2",
+    "webpack-merge": "^5.7.3"
   }
 }

@@ -1,9 +1,9 @@
-import async from 'async';
-import sharp from 'sharp';
-import Face from '../ML/faceDetection';
+import async from "async";
+import sharp from "sharp";
+import Face from "../ML/faceDetection";
 
 export default class Manager {
-  file_queue: async.QueueObject<string>;
+  file_queue!: async.QueueObject<string>;
 
   faceDetectionWorker: any;
 
@@ -22,7 +22,7 @@ export default class Manager {
       const sharpImage = sharp(filePath);
       callback();
     } catch (e) {
-      console.log('ERR: Processing file', filePath);
+      console.log("ERR: Processing file", filePath);
       console.log(e);
       callback(e);
     }
