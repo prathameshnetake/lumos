@@ -47,6 +47,7 @@
     "electron-log": "^4.3.5",
     "electron-updater": "^4.3.9",
     "load": "^1.0.2",
+    "ts-node": "^10.0.0",
     "typescript": "^4.2.4",
     "webpack": "^5.37.1",
     "webpack-cli": "^4.7.0",

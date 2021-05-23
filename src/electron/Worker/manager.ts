@@ -1,25 +1,35 @@
 import async from "async";
-import sharp from "sharp";
-import Face from "../ML/faceDetection";
+// import sharp from "sharp";
+// import Face from "../ML/faceDetection";
+import { Worker } from "worker_threads";
+import path from "path";
+
+require("@babel/register");
 
 export default class Manager {
   file_queue!: async.QueueObject<string>;
 
-  faceDetectionWorker: any;
+  faceDetectionWorker: Worker;
 
   async init() {
     this.file_queue = async.queue(this.processFile.bind(this), 1);
-    const a = new Face();
-    await a.load();
+    this.faceDetectionWorker = new Worker(
+      path.resolve(__dirname, "worker.js"),
+      {
+        workerData: {
+          path: path.resolve(__dirname, "faceExtraction.ts"),
+        },
+      }
+    );
 
-    console.log(this.faceDetectionWorker);
+    this.faceDetectionWorker.on("message", (data) => {
+      console.log(data);
+    });
   }
 
-  // eslint-disable-next-line class-methods-use-this
   async processFile(filePath: string, callback: (e?: Error) => void) {
     try {
-      console.log(filePath);
-      const sharpImage = sharp(filePath);
+      this.faceDetectionWorker.postMessage(filePath);
       callback();
     } catch (e) {
       console.log("ERR: Processing file", filePath);

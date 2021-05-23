@@ -4,6 +4,8 @@ import path from "path";
 import { app, BrowserWindow, shell, ipcMain, dialog } from "electron";
 import { autoUpdater } from "electron-updater";
 import log from "electron-log";
+import getAllImageFiles from "./utils/fileIterator";
+import IndexingManager from "./Worker/manager";
 
 export default class AppUpdater {
   constructor() {
@@ -122,10 +124,10 @@ ipcMain.on("test", async (event) => {
   event.reply("directory-selected", res);
 });
 
-ipcMain.on('start-images-indexing', async (_, directoryPath) => {
-  // const indexManager = new IndexingManager();
-  // await indexManager.init();
-  // for await (const file of getAllImageFiles(`${directoryPath}/`)) {
-  //   indexManager.addFileToQueue(file.path);
-  // }
+ipcMain.on("start-images-indexing", async (_, directoryPath) => {
+  const indexManager = new IndexingManager();
+  await indexManager.init();
+  for await (const file of getAllImageFiles(`${directoryPath}/`)) {
+    indexManager.addFileToQueue(file.path);
+  }
 });
