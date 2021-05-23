@@ -121,3 +121,11 @@ ipcMain.on("test", async (event) => {
 
   event.reply("directory-selected", res);
 });
+
+ipcMain.on('start-images-indexing', async (_, directoryPath) => {
+  // const indexManager = new IndexingManager();
+  // await indexManager.init();
+  // for await (const file of getAllImageFiles(`${directoryPath}/`)) {
+  //   indexManager.addFileToQueue(file.path);
+  // }
+});

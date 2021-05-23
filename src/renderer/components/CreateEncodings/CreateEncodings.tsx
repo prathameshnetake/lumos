@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { ipcRenderer } from 'electron';
 import { useAppDispatch, useAppSelector } from 'store';
 import { update } from '../../reducers/createEncodings';
@@ -11,22 +11,27 @@ export const CreateEncodings = () => {
     ipcRenderer.send('test');
   };
 
-  const direcortySelected = (
-    _: unknown,
-    response: Electron.OpenDialogReturnValue
-  ) => {
-    if (!response.canceled) {
-      dispatch(update(response.filePaths[0]));
-    }
-  };
+  const memoDirecortySelected = useCallback(
+    (_: unknown, response: Electron.OpenDialogReturnValue) => {
+      if (!response.canceled) {
+        dispatch(update(response.filePaths[0]));
+      }
+    },
+    [dispatch]
+  );
 
   useEffect(() => {
-    ipcRenderer.on('directory-selected', direcortySelected);
+    ipcRenderer.on('directory-selected', memoDirecortySelected);
 
     return () => {
-      ipcRenderer.off('directory-selected', direcortySelected);
+      ipcRenderer.off('directory-selected', memoDirecortySelected);
     };
-  }, []);
+  }, [dispatch, memoDirecortySelected]);
+
+  const startIndxing = () => {
+    console.log('Start inding the folder');
+    ipcRenderer.send('start-images-indexing', direcorySource);
+  };
 
   return (
     <div>
@@ -34,6 +39,9 @@ export const CreateEncodings = () => {
         Choose Directory
       </button>
       <h2>{direcorySource}</h2>
+      <button type="button" onClick={startIndxing}>
+        start indexing
+      </button>
     </div>
   );
 };
