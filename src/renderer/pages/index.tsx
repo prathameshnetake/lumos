@@ -1,10 +1,7 @@
 import React from "react";
-import { Menu } from "../components/Menu/Menu";
 
-export const Home = () => {
-  return (
-    <div>
-      <Menu />
-    </div>
-  );
+export const Home = (props: any) => {
+  console.log(props);
+
+  return <div>this is home</div>;
 };

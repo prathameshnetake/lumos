@@ -45,5 +45,3 @@ export const CreateEncodings = () => {
     </div>
   );
 };
-
-export default CreateEncodings;

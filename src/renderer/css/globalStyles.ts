@@ -13,6 +13,10 @@ export const GlobalStyles = createGlobalStyle(
       --color-dark-text: hsl(0, 0%, 80%);
     }
 
+    #root {
+      height: 100%;
+    }
+
     body {
       background-color: ${props.theme === "light"
         ? "var(--color-light)"
