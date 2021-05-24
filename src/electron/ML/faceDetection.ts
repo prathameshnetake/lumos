@@ -1,6 +1,6 @@
 import * as tf from "@tensorflow/tfjs-node";
 import { Tensor2D, Tensor3D, Tensor4D } from "@tensorflow/tfjs-node";
-import { Sharp } from "sharp";
+import sharp, { Sharp } from "sharp";
 
 declare interface AnchorsConfig {
   strides: [number, number];
@@ -187,24 +187,35 @@ export default class FaceDetect {
     return faces;
   }
 
-  async getFacesAsImageBuffer(sharpImage: Sharp) {
+  async getFacesAsImageBuffer(
+    sharpImage: Sharp
+  ): Promise<(sharp.OutputInfo | undefined | null)[]> {
     const buffer = await sharpImage.toBuffer();
     const imgTensor = tf.node.decodeImage(buffer, 3);
     const faces = await this.estimateFaces(imgTensor as Tensor3D);
     imgTensor.dispose();
     return Promise.all(
       faces.map((face) => {
-        return (
-          sharpImage
+        try {
+          const image = sharpImage
             .extract({
               top: face.topLeft[1],
               left: face.topLeft[0],
               height: face.bottomRight[1] - face.topLeft[1],
               width: face.bottomRight[0] - face.topLeft[0],
             })
-            // .resize(112, 112)
-            .toBuffer()
-        );
+            .resize(112, 112)
+            .toFile(
+              `C:\\Users\\Alex\\Desktop\\test\\test${Math.ceil(
+                Math.random() * 10000
+              )}.jpg`
+            );
+          return image;
+        } catch (e) {
+          console.log(e);
+        }
+
+        return Promise.resolve(null);
       })
     );
   }

@@ -62,11 +62,13 @@ const createWindow = async () => {
     show: false,
     width: 1024,
     height: 728,
+    frame: false,
     icon: getAssetPath("icon.png"),
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
     },
+    darkTheme: true,
   });
 
   mainWindow.loadURL(`file://${__dirname}/../renderer/index.html`);

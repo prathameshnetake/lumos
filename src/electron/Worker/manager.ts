@@ -12,7 +12,7 @@ export default class Manager {
   faceDetectionWorker: Worker;
 
   async init() {
-    this.file_queue = async.queue(this.processFile.bind(this), 1);
+    this.file_queue = async.queue(this.processFile.bind(this), 4);
     this.faceDetectionWorker = new Worker(
       path.resolve(__dirname, "worker.js"),
       {

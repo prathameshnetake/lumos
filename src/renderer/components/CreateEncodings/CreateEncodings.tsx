@@ -1,14 +1,14 @@
-import React, { useCallback, useEffect } from 'react';
-import { ipcRenderer } from 'electron';
-import { useAppDispatch, useAppSelector } from 'store';
-import { update } from '../../reducers/createEncodings';
+import React, { useCallback, useEffect } from "react";
+import { ipcRenderer } from "electron";
+import { useAppDispatch, useAppSelector } from "store";
+import { update } from "../../reducers/createEncodings";
 
 export const CreateEncodings = () => {
   const dispatch = useAppDispatch();
   const { direcorySource } = useAppSelector((state) => state.createEncodings);
 
   const open = () => {
-    ipcRenderer.send('test');
+    ipcRenderer.send("test");
   };
 
   const memoDirecortySelected = useCallback(
@@ -21,16 +21,16 @@ export const CreateEncodings = () => {
   );
 
   useEffect(() => {
-    ipcRenderer.on('directory-selected', memoDirecortySelected);
+    ipcRenderer.on("directory-selected", memoDirecortySelected);
 
     return () => {
-      ipcRenderer.off('directory-selected', memoDirecortySelected);
+      ipcRenderer.off("directory-selected", memoDirecortySelected);
     };
   }, [dispatch, memoDirecortySelected]);
 
   const startIndxing = () => {
-    console.log('Start inding the folder');
-    ipcRenderer.send('start-images-indexing', direcorySource);
+    console.log("Start inding the folder");
+    ipcRenderer.send("start-images-indexing", direcorySource);
   };
 
   return (

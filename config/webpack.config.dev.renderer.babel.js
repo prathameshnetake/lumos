@@ -69,13 +69,13 @@ export default merge(baseConfig, {
           },
           {
             loader: "css-loader",
-            options: {
-              modules: {
-                localIdentName: "[name]__[local]__[hash:base64:5]",
-              },
-              sourceMap: true,
-              importLoaders: 1,
-            },
+            // options: {
+            //   modules: {
+            //     localIdentName: "[name]__[local]__[hash:base64:5]",
+            //   },
+            //   sourceMap: true,
+            //   importLoaders: 1,
+            // },
           },
         ],
       },
