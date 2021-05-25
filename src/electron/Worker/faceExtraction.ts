@@ -3,18 +3,31 @@ import FaceDetection from "../ML/faceDetection";
 import sharp from "sharp";
 import { AsyncWorker, queue } from "async";
 
-const worker: AsyncWorker<{ filePath: string; face: FaceDetection }> = async (
-  task: { filePath: string; face: FaceDetection },
-  callback: (err?: Error) => void
-) => {
+const worker: AsyncWorker<{
+  filePath: string;
+  face: FaceDetection;
+  fileId: string;
+}> = async (task: {
+  filePath: string;
+  face: FaceDetection;
+  fileId: string;
+}): Promise<void> => {
   try {
     const sharpImage = sharp(task.filePath);
-    await task.face.getFacesAsImageBuffer(sharpImage);
+    const faces = await task.face.getFacesAsImageBuffer(sharpImage);
 
-    parentPort?.postMessage(task.filePath);
-    callback();
+    parentPort?.postMessage({
+      error: null,
+      filePath: task.filePath,
+      fileId: task.fileId,
+      faces,
+    });
   } catch (e) {
-    callback(e);
+    parentPort?.postMessage({
+      error: e,
+      filePath: task.filePath,
+      fileId: task.fileId,
+    });
   }
 };
 
@@ -27,10 +40,11 @@ const init = async () => {
 };
 
 init().then(({ face, cargoQ }) => {
-  parentPort?.on("message", async (filePath) => {
+  parentPort?.on("message", async ({ filePath, fileId }) => {
     cargoQ.push({
       filePath,
       face,
+      fileId,
     });
   });
 });

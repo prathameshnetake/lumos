@@ -6,6 +6,8 @@ export interface CreateEncodingState {
   direcorySource: string;
   currentTip: string;
   indexingStarted: boolean;
+  finished: boolean;
+  recentSessionId: string;
 }
 
 // Define the initial state using that type
@@ -13,6 +15,8 @@ const initialState: CreateEncodingState = {
   direcorySource: "",
   currentTip: "",
   indexingStarted: false,
+  finished: false,
+  recentSessionId: "",
 };
 
 export const counterSlice = createSlice({
@@ -28,14 +32,24 @@ export const counterSlice = createSlice({
       state.currentTip = action.payload;
     },
     updateIndexingStarted: (state, action: PayloadAction<boolean>) => {
-      console.log(action);
       state.indexingStarted = action.payload;
+    },
+    updateFinished: (state, action: PayloadAction<boolean>) => {
+      state.finished = action.payload;
+    },
+    updateRecentSessionId: (state, action: PayloadAction<string>) => {
+      state.recentSessionId = action.payload;
     },
   },
 });
 
-export const { update, updateIndexingStarted, updateCurrentTip } =
-  counterSlice.actions;
+export const {
+  update,
+  updateIndexingStarted,
+  updateCurrentTip,
+  updateFinished,
+  updateRecentSessionId,
+} = counterSlice.actions;
 
 // Other code such as selectors can use the imported `RootState` type
 export const selectCount = (state: RootState) => state.createEncodings;

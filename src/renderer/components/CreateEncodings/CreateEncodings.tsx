@@ -5,9 +5,11 @@ import {
   update,
   updateCurrentTip,
   updateIndexingStarted,
+  updateFinished,
+  updateRecentSessionId,
 } from "../../reducers/createEncodings";
 import { Button } from "antd";
-import { Container, Progress, SelectionControl } from "./styles";
+import { Container, Finish, Progress, SelectionControl } from "./styles";
 import {
   LumosTitle,
   LumosParagraph,
@@ -20,9 +22,13 @@ import { ThemeContext } from "../../App";
 
 export const CreateEncodings = () => {
   const dispatch = useAppDispatch();
-  const { direcorySource, currentTip, indexingStarted } = useAppSelector(
-    (state) => state.createEncodings
-  );
+  const {
+    direcorySource,
+    currentTip,
+    indexingStarted,
+    finished,
+    recentSessionId,
+  } = useAppSelector((state) => state.createEncodings);
   const { theme } = useContext(ThemeContext);
   const directorySelected = Boolean(direcorySource);
 
@@ -46,13 +52,22 @@ export const CreateEncodings = () => {
     []
   );
 
+  const memoEmbeddingsFinished = useCallback((_: unknown, response) => {
+    dispatch(updateCurrentTip("All finished"));
+    dispatch(updateIndexingStarted(false));
+    dispatch(updateFinished(true));
+    dispatch(updateRecentSessionId(response.sessionId));
+  }, []);
+
   useEffect(() => {
     ipcRenderer.on("directory-selected", memoDirecortySelected);
     ipcRenderer.on("embeddings-tip-update", memoEmbeddingsTipUpdate);
+    ipcRenderer.on("embeddings-finished", memoEmbeddingsFinished);
 
     return () => {
       ipcRenderer.off("directory-selected", memoDirecortySelected);
       ipcRenderer.off("embeddings-tip-update", memoEmbeddingsTipUpdate);
+      ipcRenderer.off("embeddings-finished", memoEmbeddingsFinished);
     };
   }, [dispatch, memoDirecortySelected]);
 
@@ -89,6 +104,7 @@ export const CreateEncodings = () => {
             justifyContent: "space-evenly",
             gridArea: "select",
           }}
+          disabled={indexingStarted}
         >
           <LumosText>Select Directory</LumosText>
           {directorySelected && (
@@ -119,6 +135,7 @@ export const CreateEncodings = () => {
             style={{ width: 160, marginTop: 16, gridArea: "start" }}
             type={theme === "dark" ? "primary" : "default"}
             onClick={startIndxing}
+            disabled={indexingStarted}
           >
             <LumosText>Start</LumosText>
           </Button>
@@ -140,6 +157,23 @@ export const CreateEncodings = () => {
             {currentTip}
           </LumosText>
         </Progress>
+      )}
+      {finished && (
+        <Finish>
+          <LumosTitle
+            level={4}
+            style={{ marginBottom: 32, textAlign: "center" }}
+          >
+            Finished
+          </LumosTitle>
+          <IoMdCheckmark style={{ height: 30, width: 30 }} />
+          <LumosText
+            type="secondary"
+            style={{ width: 600, textAlign: "center" }}
+          >
+            {recentSessionId}
+          </LumosText>
+        </Finish>
       )}
     </Container>
   );

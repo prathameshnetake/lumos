@@ -6,6 +6,7 @@ import { autoUpdater } from "electron-updater";
 import log from "electron-log";
 import getAllImageFiles from "./utils/fileIterator";
 import IndexingManager from "./Worker/manager";
+import { v4 as uuid } from "uuid";
 
 export default class AppUpdater {
   constructor() {
@@ -127,8 +128,9 @@ ipcMain.on("test", async (event) => {
 });
 
 ipcMain.on("start-images-indexing", async (event, directoryPath) => {
+  const sessionId = uuid();
   event.reply("embeddings-tip-update", "Initiating the worker manager");
-  const indexManager = new IndexingManager();
+  const indexManager = new IndexingManager(sessionId);
   await indexManager.init();
   event.reply("embeddings-tip-update", "worker manager is online");
   for await (const file of getAllImageFiles(`${directoryPath}/`)) {

@@ -27,3 +27,9 @@ export const Progress = styled.div`
   display: grid;
   justify-content: center;
 `;
+
+export const Finish = styled.div`
+  margin-top: 32px;
+  display: grid;
+  justify-content: center;
+`;

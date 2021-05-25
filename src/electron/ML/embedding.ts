@@ -1,4 +1,4 @@
-import * as tf from '@tensorflow/tfjs-node';
+import * as tf from "@tensorflow/tfjs-node";
 
 export default class FaceEmbeddings {
   model: tf.GraphModel;
@@ -6,7 +6,7 @@ export default class FaceEmbeddings {
   async load() {
     try {
       this.model = await tf.loadGraphModel(
-        'file://C:/Users/Alex/git/accio/electron/ML/models/model.json'
+        `file://${__dirname}/models/model.json`
       );
     } catch (e) {
       console.error(e);
@@ -25,13 +25,21 @@ export default class FaceEmbeddings {
 
   async predict(input: tf.Tensor) {
     const preprocessed = await FaceEmbeddings.preprocess(input as tf.Tensor3D);
+
     const res = this.model.predict(preprocessed) as tf.Tensor;
 
+    input.dispose();
+    preprocessed.dispose();
     // const reshape = res[1].reshape([128, 2]); // split 256 vectors into 128 x 2
     // const reduce = reshape.logSumExp(1); // reduce 2nd dimension by calculating logSumExp on it
 
     const output = res.dataSync();
     return [...output]; // convert typed array to simple array
+  }
+
+  async predictBuffer(input: Buffer) {
+    const imageTensor = tf.node.decodeImage(input);
+    return await this.predict(imageTensor);
   }
 }
 
