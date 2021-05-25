@@ -15,7 +15,7 @@ export default class AppUpdater {
   }
 }
 
-let mainWindow: BrowserWindow | null = null;
+export let mainWindow: BrowserWindow | null = null;
 
 if (process.env.NODE_ENV === "production") {
   const sourceMapSupport = require("source-map-support");
@@ -126,9 +126,11 @@ ipcMain.on("test", async (event) => {
   event.reply("directory-selected", res);
 });
 
-ipcMain.on("start-images-indexing", async (_, directoryPath) => {
+ipcMain.on("start-images-indexing", async (event, directoryPath) => {
+  event.reply("embeddings-tip-update", "Initiating the worker manager");
   const indexManager = new IndexingManager();
   await indexManager.init();
+  event.reply("embeddings-tip-update", "worker manager is online");
   for await (const file of getAllImageFiles(`${directoryPath}/`)) {
     indexManager.addFileToQueue(file.path);
   }

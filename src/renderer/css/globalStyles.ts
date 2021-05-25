@@ -17,6 +17,21 @@ export const GlobalStyles = createGlobalStyle(
       height: 100%;
     }
 
+    .parent-grid {
+      display: grid;
+      height: 100%;
+      grid-template-columns: 60px 1fr;
+      grid-template-rows: 40px 1fr;
+      grid-template-areas:
+        "menu menu"
+        "nav main";
+    }
+
+    .app-main {
+      grid-area: main;
+      padding: 32px;
+    }
+
     body {
       background-color: ${props.theme === "light"
         ? "var(--color-light)"

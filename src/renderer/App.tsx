@@ -27,12 +27,16 @@ export default function App() {
       <Provider store={store}>
         <ThemeContext.Provider value={{ theme, setTheme }}>
           <GlobalStyles theme={theme} />
-          <Menu />
-          <NavMenu />
-          <Switch>
-            <Route path="/createEncodings" component={CreateEncodings} />
-            <Route path="/" component={Home} />
-          </Switch>
+          <div className="parent-grid">
+            <Menu />
+            <NavMenu />
+            <div className="app-main">
+              <Switch>
+                <Route path="/createEncodings" component={CreateEncodings} />
+                <Route path="/" component={Home} />
+              </Switch>
+            </div>
+          </div>
         </ThemeContext.Provider>
       </Provider>
     </Router>

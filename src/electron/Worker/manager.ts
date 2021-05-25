@@ -1,8 +1,8 @@
 import async from "async";
-// import sharp from "sharp";
-// import Face from "../ML/faceDetection";
 import { Worker } from "worker_threads";
 import path from "path";
+import { ipcRenderer } from "electron";
+import { mainWindow } from "../main";
 
 require("@babel/register");
 
@@ -11,19 +11,25 @@ export default class Manager {
 
   faceDetectionWorker: Worker;
 
-  async init() {
-    this.file_queue = async.queue(this.processFile.bind(this), 4);
-    this.faceDetectionWorker = new Worker(
-      path.resolve(__dirname, "worker.js"),
-      {
-        workerData: {
-          path: path.resolve(__dirname, "faceExtraction.ts"),
-        },
-      }
-    );
+  async init(): Promise<void> {
+    return new Promise((res, rej) => {
+      this.file_queue = async.queue(this.processFile.bind(this), 4);
+      this.faceDetectionWorker = new Worker(
+        path.resolve(__dirname, "worker.js"),
+        {
+          workerData: {
+            path: path.resolve(__dirname, "faceExtraction.ts"),
+          },
+        }
+      );
 
-    this.faceDetectionWorker.on("message", (data) => {
-      console.log(data);
+      this.faceDetectionWorker.on("message", (data) => {
+        if (data === "initiated") {
+          res();
+        }
+        console.log(data);
+        mainWindow?.webContents.send("embeddings-tip-update", data);
+      });
     });
   }
 

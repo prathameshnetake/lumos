@@ -9,8 +9,9 @@ const worker: AsyncWorker<{ filePath: string; face: FaceDetection }> = async (
 ) => {
   try {
     const sharpImage = sharp(task.filePath);
-    const faces = await task.face.getFacesAsImageBuffer(sharpImage);
-    console.log(faces);
+    await task.face.getFacesAsImageBuffer(sharpImage);
+
+    parentPort?.postMessage(task.filePath);
     callback();
   } catch (e) {
     callback(e);
@@ -21,6 +22,7 @@ const init = async () => {
   const face = new FaceDetection();
   await face.load();
   const cargoQ = queue(worker);
+  parentPort?.postMessage("initiated");
   return { face, cargoQ };
 };
 

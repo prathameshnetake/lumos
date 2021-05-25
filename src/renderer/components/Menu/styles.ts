@@ -7,6 +7,7 @@ interface Props {
 
 export const Container = styled.div`
   position: relative;
+  grid-area: menu;
   margin: 0;
   width: 100%;
   display: grid;
