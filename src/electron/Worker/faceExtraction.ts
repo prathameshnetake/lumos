@@ -2,32 +2,29 @@ import { parentPort } from "worker_threads";
 import FaceDetection from "../ML/faceDetection";
 import sharp from "sharp";
 import { AsyncWorker, queue } from "async";
+import { WorkerData } from "./manager";
+import * as _ from "lodash";
 
-const worker: AsyncWorker<{
-  filePath: string;
+export interface FaceWorkerData extends WorkerData {
   face: FaceDetection;
-  fileId: string;
-}> = async (task: {
-  filePath: string;
-  face: FaceDetection;
-  fileId: string;
-}): Promise<void> => {
+}
+
+const worker: AsyncWorker<FaceWorkerData> = async (
+  task: FaceWorkerData
+): Promise<void> => {
   try {
     const sharpImage = sharp(task.filePath);
     const faces = await task.face.getFacesAsImageBuffer(sharpImage);
 
-    parentPort?.postMessage({
-      error: null,
-      filePath: task.filePath,
-      fileId: task.fileId,
-      faces,
-    });
+    const replyData: WorkerData = {
+      ..._.omit(task, ["face"]),
+      faces: faces as Buffer[],
+    };
+
+    parentPort?.postMessage(replyData);
   } catch (e) {
-    parentPort?.postMessage({
-      error: e,
-      filePath: task.filePath,
-      fileId: task.fileId,
-    });
+    const errReply: WorkerData = { ...task, error: new Error(e) };
+    parentPort?.postMessage(errReply);
   }
 };
 
@@ -35,16 +32,12 @@ const init = async () => {
   const face = new FaceDetection();
   await face.load();
   const cargoQ = queue(worker);
-  parentPort?.postMessage("initiated");
+  parentPort?.postMessage({ initiated: "initiated" });
   return { face, cargoQ };
 };
 
 init().then(({ face, cargoQ }) => {
-  parentPort?.on("message", async ({ filePath, fileId }) => {
-    cargoQ.push({
-      filePath,
-      face,
-      fileId,
-    });
+  parentPort?.on("message", async (task: WorkerData) => {
+    cargoQ.push({ ...task, face });
   });
 });

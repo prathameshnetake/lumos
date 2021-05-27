@@ -6,12 +6,25 @@ import { v4 as uuid } from "uuid";
 
 require("@babel/register");
 
+export interface WorkerData {
+  fileId: string;
+  filePath: string;
+  sessionId: string;
+  error?: Error;
+  faceEmbeddings?: number[];
+  faces?: Buffer[];
+  annoyItemIndex?: number;
+  initiated?: string;
+}
+
 export default class Manager {
   file_queue!: async.QueueObject<string>;
 
   faceDetectionWorker: Worker;
 
   faceEmbeddingsWorker: Worker;
+
+  annoyIndexWorkder: Worker;
 
   callbackMap = new Map<string, (e?: Error) => void>();
 
@@ -21,7 +34,7 @@ export default class Manager {
     this.sessionId = sessionId;
   }
 
-  finish = (data: { error: Error; fileId: string; filePath: string }) => {
+  finish = (data: WorkerData) => {
     const cb = this.callbackMap.get(data.fileId as string);
     if (data.error && cb) {
       cb(data.error);
@@ -39,9 +52,14 @@ export default class Manager {
 
       let faceDetectionWorkerReady = false;
       let faceEmbeddingsWorkerReady = false;
+      let annoyIndexWorkerReady = false;
 
       const checkResolve = () => {
-        if (faceDetectionWorkerReady && faceEmbeddingsWorkerReady) {
+        if (
+          faceDetectionWorkerReady &&
+          faceEmbeddingsWorkerReady &&
+          annoyIndexWorkerReady
+        ) {
           res();
         }
       };
@@ -64,28 +82,45 @@ export default class Manager {
         }
       );
 
-      this.faceDetectionWorker.on("message", (data) => {
-        if (data === "initiated") {
+      this.annoyIndexWorkder = new Worker(
+        path.resolve(__dirname, "worker.js"),
+        {
+          workerData: {
+            path: path.resolve(__dirname, "annoyIndex.ts"),
+          },
+        }
+      );
+
+      this.faceDetectionWorker.on("message", (data: WorkerData) => {
+        if (data.initiated === "initiated") {
           faceDetectionWorkerReady = true;
           return checkResolve();
         }
-
-        console.log(data);
 
         if (data.error) {
           this.finish(data);
         }
 
-        if (data.faces.length) {
+        if (data.faces?.length) {
           this.faceEmbeddingsWorker.postMessage(data);
         } else {
           this.finish(data);
         }
       });
 
-      this.faceEmbeddingsWorker.on("message", (data) => {
-        if (data === "initiated") {
+      this.faceEmbeddingsWorker.on("message", (data: WorkerData) => {
+        if (data.initiated === "initiated") {
           faceEmbeddingsWorkerReady = true;
+          return checkResolve();
+        }
+
+        this.annoyIndexWorkder.postMessage(data);
+        this.finish(data);
+      });
+
+      this.annoyIndexWorkder.on("message", (data: WorkerData) => {
+        if (data.initiated === "initiated") {
+          annoyIndexWorkerReady = true;
           return checkResolve();
         }
 
@@ -109,7 +144,12 @@ export default class Manager {
     this.callbackMap.set(fileId, callback);
 
     try {
-      this.faceDetectionWorker.postMessage({ filePath, fileId });
+      const faceTask: WorkerData = {
+        filePath,
+        fileId,
+        sessionId: this.sessionId,
+      };
+      this.faceDetectionWorker.postMessage(faceTask);
     } catch (e) {
       console.log("ERR: Processing file", filePath);
       console.log(e);

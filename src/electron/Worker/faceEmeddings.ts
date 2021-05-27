@@ -1,44 +1,44 @@
 import { parentPort } from "worker_threads";
 import FaceEmbedding from "../ML/embedding";
 import { AsyncWorker, queue } from "async";
+import { WorkerData } from "./manager";
+import * as _ from "lodash";
 
-const worker: AsyncWorker<{
-  faces: Buffer[];
+export interface EmbeddingsWorkerData extends WorkerData {
   faceEmbedding: FaceEmbedding;
-  fileId: string;
-  filePath: string;
-}> = async (task: {
-  faces: Buffer[];
-  faceEmbedding: FaceEmbedding;
-  fileId: string;
-  filePath: string;
-}): Promise<void> => {
+}
+
+const worker: AsyncWorker<EmbeddingsWorkerData> = async (
+  task
+): Promise<void> => {
   try {
-    const { fileId, filePath, faces, faceEmbedding } = task;
-    for (let i = 0; i < faces.length; i += 1) {
-      const currentBuffer = faces[i];
-      const embeddings = await faceEmbedding.predictBuffer(currentBuffer);
-      console.log(embeddings);
+    const { faces, faceEmbedding } = task;
+    for (let i = 0; i < faces!.length; i += 1) {
+      const currentBuffer = faces![i];
+      const faceEmbeddings = await faceEmbedding.predictBuffer(currentBuffer);
+
+      const replyData: WorkerData = {
+        ..._.omit(task, ["faceEmbedding", "faces"]), // faces are processed no need to forward
+        faceEmbeddings,
+      };
+      parentPort?.postMessage(replyData);
     }
-    parentPort?.postMessage({ error: null, fileId, filePath });
-  } catch (e) {}
+  } catch (e) {
+    const errReply: WorkerData = { ...task, error: new Error(e) };
+    parentPort?.postMessage(errReply);
+  }
 };
 
 const init = async () => {
   const faceEmbedding = new FaceEmbedding();
   await faceEmbedding.load();
   const cargoQ = queue(worker);
-  parentPort?.postMessage("initiated");
+  parentPort?.postMessage({ initiated: "initiated" });
   return { faceEmbedding, cargoQ };
 };
 
 init().then(({ faceEmbedding, cargoQ }) => {
-  parentPort?.on("message", async ({ faces, fileId, filePath }) => {
-    cargoQ.push({
-      faces,
-      faceEmbedding,
-      fileId,
-      filePath,
-    });
+  parentPort?.on("message", async (task: WorkerData) => {
+    cargoQ.push({ ...task, faceEmbedding });
   });
 });
