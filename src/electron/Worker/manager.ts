@@ -1,4 +1,5 @@
 import async from "async";
+import { app } from "electron";
 import { Worker } from "worker_threads";
 import path from "path";
 import { mainWindow } from "../main";
@@ -15,6 +16,7 @@ export interface WorkerData {
   faces?: Buffer[];
   annoyItemIndex?: number;
   initiated?: string;
+  misc?: { action: string; data?: any };
 }
 
 export default class Manager {
@@ -115,13 +117,16 @@ export default class Manager {
         }
 
         this.annoyIndexWorkder.postMessage(data);
-        this.finish(data);
       });
 
       this.annoyIndexWorkder.on("message", (data: WorkerData) => {
         if (data.initiated === "initiated") {
           annoyIndexWorkerReady = true;
           return checkResolve();
+        }
+
+        if (data.misc?.action === "build_and_saved") {
+          this.annoyIndexWorkder.terminate();
         }
 
         console.log(data);
@@ -132,6 +137,16 @@ export default class Manager {
 
   async drain() {
     console.log("All files finished processing");
+    // build and save annoy index file
+    const annFinishData = {
+      misc: {
+        action: "finish",
+        data: {
+          path: `${app.getPath("userData")}/${this.sessionId}.ann`,
+        },
+      },
+    };
+    this.annoyIndexWorkder.postMessage(annFinishData);
     this.faceDetectionWorker.terminate();
     this.faceEmbeddingsWorker.terminate();
     mainWindow?.webContents.send("embeddings-finished", {

@@ -8,12 +8,12 @@
     "renderer": "cross-env NODE_ENV=development webpack serve --config ./config/webpack.config.dev.renderer.babel.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Prathamesh Netake",
   "license": "ISC",
   "dependencies": {
     "@reduxjs/toolkit": "^1.5.1",
     "@tensorflow/tfjs-node": "^3.6.1",
-    "annoy-node": "^0.1.3",
+    "annoy-node": "^0.1.5",
     "antd": "^4.15.6",
     "async": "^3.2.0",
     "electron": "^12.0.9",
