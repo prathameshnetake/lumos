@@ -7,6 +7,7 @@ import log from "electron-log";
 import getAllImageFiles from "./utils/fileIterator";
 import IndexingManager from "./Worker/manager";
 import { v4 as uuid } from "uuid";
+import knex from "knex";
 
 export default class AppUpdater {
   constructor() {
