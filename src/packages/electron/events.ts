@@ -1,10 +1,11 @@
-import { ipcMain, dialog, BrowserWindow, session } from "electron";
+import { ipcMain, dialog, BrowserWindow, session, shell, Menu } from "electron";
 import { mainWindow } from "./main";
 import getAllImageFiles from "./utils/fileIterator";
 import { v4 as uuid } from "uuid";
 import Manager from "./Worker/comlink_manager";
 import IndexingManager from "./Worker/indexing_manager";
 import { SessionBlob } from "./DB/session";
+import { pathToFileURL } from "url";
 
 export const addListeners = () => {
   ipcMain.on("test", async (event) => {
@@ -63,21 +64,21 @@ export const addListeners = () => {
     }
   );
 
-  // ipcMain.on(
-  //   "show-context-menu-face-search-result",
-  //   (event, filePath: string) => {
-  //     const template = [
-  //       {
-  //         label: "Open file location",
-  //         click: () => {
-  //           console.log("open file explorer");
-  //           console.log(filePath);
-  //           shell.showItemInFolder(pathToFileURL(filePath).toString());
-  //         },
-  //       },
-  //     ];
-  //     const menu = Menu.buildFromTemplate(template);
-  //     menu.popup(BrowserWindow.fromWebContents(event.sender) as any);
-  //   }
-  // );
+  ipcMain.on(
+    "show-context-menu-face-search-result",
+    (event, filePath: string) => {
+      const template = [
+        {
+          label: "Open file location",
+          click: () => {
+            console.log("open file explorer");
+            console.log(filePath);
+            shell.showItemInFolder(pathToFileURL(filePath).toString());
+          },
+        },
+      ];
+      const menu = Menu.buildFromTemplate(template);
+      menu.popup(BrowserWindow.fromWebContents(event.sender) as any);
+    }
+  );
 };

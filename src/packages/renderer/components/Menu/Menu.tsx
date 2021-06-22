@@ -6,7 +6,7 @@ import {
   VscCloseStyled,
   VscChromeMinimizeStyled,
 } from "./styles";
-import icon from "../../../assets/icon.png";
+import icon from "../../assets/icon.png";
 import { Switch } from "antd";
 import { SwitchChangeEventHandler } from "antd/lib/switch";
 import { ThemeContext } from "../../App";
@@ -23,8 +23,8 @@ export const Menu = () => {
 
   return (
     <Container theme={theme}>
-      {/* <img src={icon} style={{ height: 25 }} /> */}
-      <Title>Lumos Title</Title>
+      <img src={icon} style={{ height: 25 }} />
+      <Title>Lumos</Title>
       <ControlsContainer>
         <Switch onChange={onDarkModeToggle} checked={theme === "dark"} />
         <VscChromeMinimizeStyled />

@@ -2,6 +2,7 @@ import { builtinModules } from "module";
 import { defineConfig } from "vite";
 import config from "../../../config";
 import { join } from "path";
+import reactRefresh from '@vitejs/plugin-react-refresh'
 
 const PACKAGE_ROOT = __dirname;
 
@@ -21,7 +22,7 @@ export default defineConfig({
       "/@/": join(PACKAGE_ROOT) + "/",
     },
   },
-  plugins: [],
+  plugins: [reactRefresh()],
   base: "",
   server: {
     fsServe: {

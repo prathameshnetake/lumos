@@ -39,7 +39,7 @@ export default defineConfig({
       formats: ["cjs"],
     },
     rollupOptions: {
-      external: ["electron", "electron-settings", ...builtinModules],
+      external: ["electron", "electron-settings", "knex", ...builtinModules],
       output: {
         entryFileNames: "[name].cjs",
       },

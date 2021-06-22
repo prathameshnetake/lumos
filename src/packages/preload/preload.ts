@@ -1,29 +1,13 @@
 import { contextBridge, ipcRenderer, app } from "electron";
 import { pathToFileURL } from "url";
-import { getKnexInstance } from "../electron/DB/knex";
-import { getSync } from "electron-settings";
-import { getAllSessions } from "../electron/DB/session";
-import { readFileSync } from "fs-extra";
+import { databaseBridgeInit } from "./databaseBridge";
 
-contextBridge.exposeInMainWorld("db", {
-  getAllSessions: async () => {
-    console.log(
-      readFileSync(`${__dirname}/../dist_main/DB_FILE_PATH`).toString()
-    );
-
-    let knexInstance = getKnexInstance(
-      readFileSync(`${__dirname}/../dist_main/DB_FILE_PATH`).toString()
-    );
-    return await getAllSessions(knexInstance);
-  },
-});
+databaseBridgeInit();
 
 contextBridge.exposeInMainWorld("electron", {
   ipcRenderer: {
     send: (channel: string, data: any) => {
       // whitelist channels
-      console.log(process.env.dbFilePath);
-
       ipcRenderer.send(channel, data);
     },
     on: (channel: string, func: any) => {
