@@ -21,14 +21,22 @@ export const Menu = () => {
     }
   };
 
+  const close = () => {
+    (window as any).electron.ipcRenderer.send("close")
+  }
+
+  const minimize = () => {
+    (window as any).electron.ipcRenderer.send("minimize")
+  }
+
   return (
     <Container theme={theme}>
       <img src={icon} style={{ height: 25 }} />
       <Title>Lumos</Title>
       <ControlsContainer>
         <Switch onChange={onDarkModeToggle} checked={theme === "dark"} />
-        <VscChromeMinimizeStyled />
-        <VscCloseStyled />
+        <VscChromeMinimizeStyled onClick={minimize}/>
+        <VscCloseStyled onClick={close}/>
       </ControlsContainer>
     </Container>
   );

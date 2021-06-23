@@ -2,6 +2,7 @@ import React, { createContext } from "react";
 import { HashRouter as Router, Switch, Route } from "react-router-dom";
 import { CreateEncodings } from "./components/CreateEncodings/CreateEncodings";
 import { Home } from "./pages/index";
+import {Settings} from "./pages/settings"
 import { Provider } from "react-redux";
 import { store } from "./store";
 import { GlobalStyles } from "./css/globalStyles";
@@ -33,6 +34,7 @@ export default function App() {
             <div className="app-main">
               <Switch>
                 <Route path="/createEncodings" component={CreateEncodings} />
+                <Route path="/settings" component={Settings} />
                 <Route path="/" component={Home} />
               </Switch>
             </div>

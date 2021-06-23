@@ -1,4 +1,12 @@
-import { ipcMain, dialog, BrowserWindow, session, shell, Menu } from "electron";
+import {
+  ipcMain,
+  dialog,
+  BrowserWindow,
+  session,
+  shell,
+  Menu,
+  app,
+} from "electron";
 import { mainWindow } from "./main";
 import getAllImageFiles from "./utils/fileIterator";
 import { v4 as uuid } from "uuid";
@@ -81,4 +89,13 @@ export const addListeners = () => {
       menu.popup(BrowserWindow.fromWebContents(event.sender) as any);
     }
   );
+
+  ipcMain.on("close", () => {
+    mainWindow?.close();
+    app.exit();
+  });
+
+  ipcMain.on("minimize", () => {
+    mainWindow?.minimize();
+  });
 };

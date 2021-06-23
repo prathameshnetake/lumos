@@ -8,7 +8,7 @@ interface Props {
 export const Menu = styled.div`
   display: grid;
   grid-area: nav;
-  grid-template-rows: repeat(2, 60px);
+  grid-template-rows: repeat(3, 60px);
   background: ${(props: Props) =>
     props.theme === "dark" ? "hsl(0, 0%, 25%)" : "hsl(0, 0%, 80%);"};
 `;
