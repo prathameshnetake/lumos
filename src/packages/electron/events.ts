@@ -79,8 +79,6 @@ export const addListeners = () => {
         {
           label: "Open file location",
           click: () => {
-            console.log("open file explorer");
-            console.log(filePath);
             shell.showItemInFolder(pathToFileURL(filePath).toString());
           },
         },

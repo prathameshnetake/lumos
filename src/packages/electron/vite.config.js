@@ -7,11 +7,10 @@ export default defineConfig({
   root: __dirname,
   base: "./",
   build: {
-    sourcemap: "inline",
     target: `node16`,
     outDir: resolve(config.root + "/dist_main"),
     assetsDir: ".",
-    minify: false,
+    minify: process.env.MODE === 'development' ? false : 'terser',
     lib: {
       entry: "main.ts",
       formats: ["cjs"],

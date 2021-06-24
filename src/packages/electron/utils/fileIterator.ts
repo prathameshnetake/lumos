@@ -1,4 +1,4 @@
-import fs from "promise-fs";
+import fs from "fs-extra";
 import pathlib from "path";
 
 const validExtention = [".jpg", ".png"];
@@ -11,7 +11,7 @@ interface IFileDetails {
 export default async function* getAllImageFiles(
   path: string
 ): AsyncGenerator<IFileDetails> {
-  const entries = await fs.readdir(path, { withFileTypes: true });
+  const entries = fs.readdirSync(path, { withFileTypes: true });
 
   for (const file of entries) {
     if (file.isDirectory()) {

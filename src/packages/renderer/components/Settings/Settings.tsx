@@ -1,9 +1,12 @@
 import React from "react";
+import { Select } from "antd";
 
 export const Settings = () => {
-    return (
-        <div>
-            this is settings
-        </div>
-    )
-}
+  return (
+    <div>
+      <Select>
+        <Select.Option value="demo">Demo</Select.Option>
+      </Select>
+    </div>
+  );
+};
