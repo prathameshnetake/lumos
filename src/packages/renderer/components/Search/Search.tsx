@@ -6,32 +6,18 @@ import {
   updateCurrentFaces,
   updateCurrectMatches,
   updateFetchingMatches,
+  updateFetchingFaces,
 } from "../../reducers/search";
-import { Button, message, Radio, RadioChangeEvent } from "antd";
-// eslint-disable-next-line import/no-unresolved
 import { OpenDialogReturnValue } from "electron/main";
-import {
-  ImageDiv,
-  ImagePreview,
-  QueryFaces,
-  QueryFacesWrapper,
-  QuerySelection,
-  ResultFaces,
-  ResultImageContainer,
-  SearchContainer,
-} from "./styles";
-import { InboxOutlined } from "@ant-design/icons";
-import {
-  LumosDragger,
-  LumosText,
-  LumosTitle,
-} from "../../css/ant-design-custom";
 import { AiOutlineDelete, AiOutlineSelect } from "react-icons/ai";
-// import path from "path";
-import { blue, red } from "@ant-design/colors";
+import { BsPersonBoundingBox } from "react-icons/bs";
+import { BiFileFind } from "react-icons/bi";
 import { SessionBlob } from "../../../electron/DB/session";
+import { Button } from "../common/Button";
+import { RadioGroup } from "@headlessui/react";
+import peopleSearch from "../../assets/people_search.svg";
+import searchIcon from "../../assets/search.svg";
 const ipcRenderer = (window as any).electron.ipcRenderer;
-const { pathToFileURL } = (window as any).url;
 
 export const Search = () => {
   const dispatch = useAppDispatch();
@@ -43,18 +29,11 @@ export const Search = () => {
     currentSession,
     currentMatches,
     fetchingMatches,
+    fetchingFaces,
   } = useAppSelector((state) => state.search);
 
   const fileSelected = useCallback((_, res: OpenDialogReturnValue) => {
     if (!res.canceled) {
-      message.open({
-        type: "info",
-        content: `Image selection success!`,
-        style: {
-          marginTop: 32,
-        },
-        duration: 1,
-      });
       dispatch(updateCurrectMatches([]));
       dispatch(updateCurrentFaces([]));
       dispatch(updateSelectedFile(res.filePaths[0]));
@@ -62,6 +41,7 @@ export const Search = () => {
   }, []);
 
   const getFacesCallback = useCallback((_, faces: string[]) => {
+    dispatch(updateFetchingFaces(false));
     if (faces.length) {
       setQueryFace(faces[0]);
     }
@@ -99,12 +79,11 @@ export const Search = () => {
   };
 
   const getFaces = () => {
+    dispatch(updateFetchingFaces(true));
     ipcRenderer.send("get-faces", selectedFile);
   };
 
-  const faceSelect = (evt: RadioChangeEvent) => {
-    setQueryFace(evt.target.value);
-  };
+  const faceSelect = () => {};
 
   const findMatch = () => {
     dispatch(updateFetchingMatches(true));
@@ -123,96 +102,123 @@ export const Search = () => {
     ipcRenderer.send("show-context-menu-face-search-result", path);
   };
 
+  console.log(currentMatches);
+
   return (
-    <SearchContainer>
-      <QuerySelection>
-        <LumosDragger>
-          <p className="ant-upload-drag-icon" onClick={selectFile}>
-            <InboxOutlined />
-          </p>
-          <p className="ant-upload-text">
-            <h4>Click or drag file to this area to select/reselect</h4>
-          </p>
-          <p className="ant-upload-hint">
-            Support for a single file selection. If dragged multiple then first
-            file will be selected. Click on extract face
-          </p>
-          {selectedFile && (
-            <p className="selected-file-preview">
-              <ImagePreview>
-                <ImageDiv
-                  src={pathToFileURL(selectedFile)}
-                  height={45}
-                  width={45}
-                />
-                {/* <p className="filename">{path.basename(selectedFile)}</p> */}
-                <AiOutlineDelete
-                  style={{ color: red[5], cursor: "pointer", fontSize: 16 }}
-                  onClick={() => {
-                    dispatch(updateSelectedFile(""));
-                    dispatch(updateCurrectMatches([]));
-                    dispatch(updateCurrentFaces([]));
-                  }}
-                />
-              </ImagePreview>
-              <Button type="primary" onClick={getFaces}>
-                Extract Faces
-              </Button>
-            </p>
-          )}
-        </LumosDragger>
-      </QuerySelection>
-      <QueryFaces>
-        {currentFaces.length && (
-          <QueryFacesWrapper>
-            <AiOutlineSelect
-              fontSize={30}
-              color={blue.primary}
-              className="icon"
-            />
-            <LumosTitle style={{ fontSize: 16, justifySelf: "center" }}>
-              Select face
-            </LumosTitle>
-            <Radio.Group
-              defaultValue={currentFaces[0]}
-              onChange={faceSelect}
-              className="radioGroup"
-            >
-              {currentFaces.map((face) => (
-                <Radio value={face}>
-                  <img height={60} src={`file://${face}`} alt="" />
-                </Radio>
-              ))}
-            </Radio.Group>
-            <Button
-              type="primary"
-              onClick={findMatch}
-              loading={fetchingMatches}
-            >
-              Find Matches
-            </Button>
-          </QueryFacesWrapper>
-        )}
-      </QueryFaces>
-      <ResultFaces>
-        {currentMatches.map((match) => (
-          <ResultImageContainer
-            onContextMenu={(e) => handleContentMenu(e, match.filePath)}
+    <div className="bg-gray-50 dark:bg-gray-700 flex-1 px-4 py-8 select-none flex flex-col dark:text-gray-50">
+      {/* QUERY AREA */}
+      <div className="flex h-60 items-center justify-center">
+        <div className="flex-1  flex flex-col items-center">
+          <div
+            className="text-3xl text-blue-500 cursor-pointer mb-2"
+            onClick={selectFile}
           >
-            <ImageDiv src={pathToFileURL(match.filePath)} />
-            <LumosText
-              style={{
-                fontSize: 12,
-                fontWeight: "bold",
-                textAlign: "center",
-                userSelect: "none",
-              }}
+            <BsPersonBoundingBox />
+          </div>
+          <p>Select/Drag image</p>
+          {selectedFile ? (
+            <div className="flex items-center justify-center">
+              <img
+                src={selectedFile}
+                alt=""
+                className="rounded h-14 shadow-lg m-4"
+              />
+              <Button
+                text={"Extract Faces"}
+                onClick={getFaces}
+                disabled={fetchingFaces}
+                inProgress={fetchingFaces}
+              />
+            </div>
+          ) : null}
+        </div>
+        <div className="flex-1 flex items-center flex-col justify-center">
+          {!currentFaces.length && (
+            <React.Fragment>
+              <img
+                src={peopleSearch}
+                alt=""
+                className="h-32 justify-self-center"
+              />
+            </React.Fragment>
+          )}
+          {currentFaces.length ? (
+            <React.Fragment>
+              <div
+                className="text-3xl text-blue-500 cursor-pointer mb-2"
+                onClick={selectFile}
+              ></div>
+              <p className="mb-2">Face results from Image</p>
+              <RadioGroup
+                value={queryFace}
+                onChange={setQueryFace}
+                className="flex space-x-4 justify-center"
+              >
+                <RadioGroup.Label className="sr-only">
+                  Select Face
+                </RadioGroup.Label>
+                {currentFaces.map((face) => {
+                  return (
+                    <RadioGroup.Option
+                      value={face}
+                      className="cursor-pointer"
+                      key={face}
+                    >
+                      {({ checked }) => (
+                        <img
+                          src={face}
+                          alt=""
+                          className="rounded-md h-10 shadow-lg"
+                        />
+                      )}
+                    </RadioGroup.Option>
+                  );
+                })}
+              </RadioGroup>
+              <div className="flex items-center justify-center">
+                <img
+                  src={queryFace}
+                  alt=""
+                  className="rounded-lg h-24 shadow-2xl m-6 "
+                />
+                <Button
+                  text={"Find Matches"}
+                  onClick={findMatch}
+                  disabled={fetchingMatches}
+                  inProgress={fetchingMatches}
+                />
+              </div>
+            </React.Fragment>
+          ) : null}
+        </div>
+      </div>
+
+      {/* RESULT */}
+      <React.Fragment>
+        {!currentMatches.length && (
+          <div className=" flex-1 flex items-center justify-center flex-col">
+            <img src={searchIcon} className="h-40 w-40" />
+            <p className="font-semibold text-2xl m-4">No Matches Yet!</p>
+          </div>
+        )}
+        <div className="flex flex-wrap overflow-y-auto">
+          {currentMatches.map((match) => (
+            <div
+              className="h-32 w-28 mr-4 flex items-center justify-center flex-col transform hover:scale-105 transition-transform cursor-pointer"
+              key={match.annoyItemIndex}
             >
-              {/* {path.basename(match.filePath)} */}
-            </LumosText>
-          </ResultImageContainer>
-        ))}
-      </ResultFaces>
-    </SearchContainer>
+              <img
+                src={match.filePath}
+                alt=""
+                className="h-24 rounded-sm shadow-sm"
+              />
+              <p className="w-full h-4 text-xs truncate mt-2 font-semibold">
+                {match.filePath}
+              </p>
+            </div>
+          ))}
+        </div>
+      </React.Fragment>
+    </div>
   );
 };

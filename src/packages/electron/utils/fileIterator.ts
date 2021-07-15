@@ -8,7 +8,7 @@ interface IFileDetails {
   name: string;
 }
 
-export default async function* getAllImageFiles(
+export async function* getAllImageFiles(
   path: string
 ): AsyncGenerator<IFileDetails> {
   const entries = fs.readdirSync(path, { withFileTypes: true });
@@ -25,3 +25,22 @@ export default async function* getAllImageFiles(
     }
   }
 }
+
+export const getAllFiles = (dirPath: string, arrayOfFiles?: string[]) => {
+  const files = fs.readdirSync(dirPath);
+
+  arrayOfFiles = arrayOfFiles || [];
+
+  files.forEach(function (file) {
+    if (fs.statSync(dirPath + "/" + file).isDirectory()) {
+      arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles);
+    } else {
+      const ext = pathlib.extname(file);
+      if (validExtention.indexOf(ext.toLocaleLowerCase()) !== -1) {
+        arrayOfFiles!.push(pathlib.join(dirPath, "/", file));
+      }
+    }
+  });
+
+  return arrayOfFiles;
+};

@@ -2,7 +2,7 @@ import React, { createContext } from "react";
 import { HashRouter as Router, Switch, Route } from "react-router-dom";
 import { CreateEncodings } from "./components/CreateEncodings/CreateEncodings";
 import { Home } from "./pages/index";
-import {Settings} from "./pages/settings"
+import { Settings } from "./pages/settings";
 import { Provider } from "react-redux";
 import { store } from "./store";
 import { GlobalStyles } from "./css/globalStyles";
@@ -27,11 +27,10 @@ export default function App() {
     <Provider store={store}>
       <Router>
         <ThemeContext.Provider value={{ theme, setTheme } as any}>
-          <GlobalStyles theme={theme} />
-          <div className="parent-grid">
+          <div className="w-full h-screen flex flex-col overflow-hidden">
             <Menu />
-            <NavMenu />
-            <div className="app-main">
+            <div className="flex flex-1 h-full">
+              <NavMenu />
               <Switch>
                 <Route path="/createEncodings" component={CreateEncodings} />
                 <Route path="/settings" component={Settings} />

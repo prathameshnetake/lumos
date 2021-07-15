@@ -33,6 +33,7 @@ export default class MatchingWorker {
     await this.faceEmbeddings.load();
     const embeddings = await this.faceEmbeddings.predictBuffer(buf);
     this.faceEmbeddings.destruct();
+
     const annoy = new Annoy(128, Metric.EUCLIDEAN);
     annoy.load(session.indexFilePath);
     const { neighbours } = annoy.get_nns_by_vector(

@@ -17,6 +17,7 @@ import settings from "electron-settings";
 export type IndexTask = {
   filePath: string;
   fileId: string;
+  index?: number;
 };
 
 export default class IndexingManager {
@@ -32,9 +33,14 @@ export default class IndexingManager {
   databaseApi!: DatabaseApiType;
   private index = 0;
   private sessionId: string;
+  private totalFiles: number;
+  private processedFiles = 0;
+  private sessionName: string;
 
-  constructor(sessionId: string) {
+  constructor(sessionId: string, sessionName: string, totalFiles: number) {
     this.sessionId = sessionId;
+    this.totalFiles = totalFiles;
+    this.sessionName = sessionName;
   }
 
   private createWorkerInstance() {
@@ -83,13 +89,20 @@ export default class IndexingManager {
   }
 
   addTask(task: IndexTask) {
-    this.file_queue.push(task, (err, fileName) => {
+    this.file_queue.push(task, (err, filePath) => {
       if (err) {
         return console.log(err);
       }
 
+      // calc progress
+      this.processedFiles += 1;
+      const progress = Math.round(
+        (this.processedFiles / this.totalFiles) * 100
+      );
+
       // notify to renderer
-      mainWindow?.webContents.send("embeddings-tip-update", fileName);
+      mainWindow?.webContents.send("embeddings-tip-update", filePath);
+      mainWindow?.webContents.send("embeddings-progress-update", progress);
     });
   }
 
@@ -118,18 +131,22 @@ export default class IndexingManager {
 
   private async drain() {
     const annoyIndexPath = `${app.getPath("userData")}/${this.sessionId}.ann`;
-    console.log(annoyIndexPath);
 
     const sessionData: SessionBlob = {
       indexFilePath: annoyIndexPath,
       sessionId: this.sessionId!,
+      sessionName: this.sessionName,
     };
     this.annoyIndexApi.finish(annoyIndexPath, 10);
     await this.databaseApi.saveSessionData(sessionData);
 
+    await this.faceExtractionApi.finish();
+    await this.faceEmbeddingApi.finish();
+
     this.terminateAllWorkers();
     mainWindow?.webContents.send("embeddings-finished", {
       sessionId: this.sessionId,
+      sessionName: this.sessionName,
     });
   }
 }

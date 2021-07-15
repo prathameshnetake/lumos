@@ -27,6 +27,8 @@ const createWindow = async () => {
     frame: false,
     minHeight: 768,
     minWidth: 1024,
+    height: 768,
+    width: 1024,
     webPreferences: {
       preload: join(__dirname, "../dist_preload/preload.cjs"),
       webSecurity: false,

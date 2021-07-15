@@ -12,6 +12,7 @@ export interface CreateEncodingState {
   currentFaces: string[];
   currentMatches: FaceBlob[];
   fetchingMatches: boolean;
+  fetchingFaces: boolean;
 }
 
 // Define the initial state using that type
@@ -22,6 +23,7 @@ const initialState: CreateEncodingState = {
   currentFaces: [],
   currentMatches: [],
   fetchingMatches: false,
+  fetchingFaces: false,
 };
 
 export const searchSlice = createSlice({
@@ -50,6 +52,9 @@ export const searchSlice = createSlice({
     updateFetchingMatches: (state, action: PayloadAction<boolean>) => {
       state.fetchingMatches = action.payload;
     },
+    updateFetchingFaces: (state, action: PayloadAction<boolean>) => {
+      state.fetchingFaces = action.payload;
+    },
   },
 });
 
@@ -60,6 +65,7 @@ export const {
   updateCurrentSession,
   updateCurrectMatches,
   updateFetchingMatches,
+  updateFetchingFaces,
 } = searchSlice.actions;
 
 // Other code such as selectors can use the imported `RootState` type

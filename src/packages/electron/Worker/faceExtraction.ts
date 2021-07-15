@@ -45,9 +45,14 @@ const addTask = async (task: FaceWorkerData): Promise<Buffer[]> => {
   });
 };
 
+const finish = async () => {
+  await face.destruct();
+};
+
 const faceExtractionApi = {
   init,
   addTask,
+  finish,
 };
 
 export type FaceExtractionApiType = typeof faceExtractionApi;

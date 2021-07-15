@@ -53,9 +53,14 @@ const addTask = async (task: EmbeddingsWorkerData): Promise<number[][]> => {
   });
 };
 
+const finish = async () => {
+  await faceEmbeddingML.destruct();
+};
+
 const faceEmbeddingApi = {
   init,
   addTask,
+  finish,
 };
 
 export type FaceEmbeddingApiType = typeof faceEmbeddingApi;

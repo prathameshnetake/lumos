@@ -135,32 +135,34 @@ export default class FaceDetect {
   async estimateFaces(input: tf.Tensor3D) {
     const preprocessed = await this.preprocess(input as tf.Tensor3D);
     input.dispose();
-    const [batchOut, boxes, scores] = tf.tidy((): [
-      tf.Tensor<tf.Rank>,
-      tf.Tensor2D,
-      Float32Array | Int32Array | Int32Array | Uint8Array
-    ] => {
-      // [1, 897, 17] 1 = batch, 897 = number of anchors
-      const batchedPrediction = this.model.predict(
-        preprocessed
-      ) as tf.Tensor<tf.Rank>[];
-      const sorted = batchedPrediction.sort((a, b) => a.size - b.size);
-      const concat384 = tf.concat([sorted[0], sorted[2]], 2); // dim: 384, 1 + 16
-      const concat512 = tf.concat([sorted[1], sorted[3]], 2); // dim: 512, 1 + 16
-      const concat = tf.concat([concat512, concat384], 1);
-      const batchOut = concat.squeeze();
+    const [batchOut, boxes, scores] = tf.tidy(
+      (): [
+        tf.Tensor<tf.Rank>,
+        tf.Tensor2D,
+        Float32Array | Int32Array | Int32Array | Uint8Array
+      ] => {
+        // [1, 897, 17] 1 = batch, 897 = number of anchors
+        const batchedPrediction = this.model.predict(
+          preprocessed
+        ) as tf.Tensor<tf.Rank>[];
+        const sorted = batchedPrediction.sort((a, b) => a.size - b.size);
+        const concat384 = tf.concat([sorted[0], sorted[2]], 2); // dim: 384, 1 + 16
+        const concat512 = tf.concat([sorted[1], sorted[3]], 2); // dim: 512, 1 + 16
+        const concat = tf.concat([concat512, concat384], 1);
+        const batchOut = concat.squeeze();
 
-      // return batchOut as Tensor2D;
+        // return batchOut as Tensor2D;
 
-      const boxesOut = decodeBounds(
-        batchOut as Tensor2D,
-        tf.tensor2d(this.anchorsData),
-        tf.tensor1d([this.inputWidth, this.inputHeight])
-      );
-      const logits = tf.slice(batchOut, [0, 0], [-1, 1]);
-      const scoresOut = tf.sigmoid(logits).squeeze().dataSync();
-      return [batchOut, boxesOut, scoresOut];
-    });
+        const boxesOut = decodeBounds(
+          batchOut as Tensor2D,
+          tf.tensor2d(this.anchorsData),
+          tf.tensor1d([this.inputWidth, this.inputHeight])
+        );
+        const logits = tf.slice(batchOut, [0, 0], [-1, 1]);
+        const scoresOut = tf.sigmoid(logits).squeeze().dataSync();
+        return [batchOut, boxesOut, scoresOut];
+      }
+    );
 
     preprocessed.dispose();
 
@@ -284,6 +286,10 @@ export default class FaceDetect {
     }
 
     return facesBuffer;
+  }
+
+  async destruct() {
+    this.model.dispose();
   }
 }
 

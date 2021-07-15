@@ -8,12 +8,18 @@ import {
   app,
 } from "electron";
 import { mainWindow } from "./main";
-import getAllImageFiles from "./utils/fileIterator";
+import { getAllFiles } from "./utils/fileIterator";
 import { v4 as uuid } from "uuid";
 import Manager from "./Worker/comlink_manager";
 import IndexingManager from "./Worker/indexing_manager";
 import { SessionBlob } from "./DB/session";
 import { pathToFileURL } from "url";
+import { extname } from "path";
+
+export interface IndexPayload {
+  direcorySource: string;
+  sessionName: string;
+}
 
 export const addListeners = () => {
   ipcMain.on("test", async (event) => {
@@ -24,23 +30,46 @@ export const addListeners = () => {
     event.reply("directory-selected", res);
   });
 
-  ipcMain.on("start-images-indexing", async (event, directoryPath) => {
+  ipcMain.on("start-images-indexing", async (event, data: IndexPayload) => {
+    const { direcorySource, sessionName } = data;
     const sessionId = uuid();
     event.reply("embeddings-tip-update", "Initiating the worker manager");
-    const indexingManager = new IndexingManager(sessionId);
+    // count number of files
+    const files = getAllFiles(`${direcorySource}/`);
+
+    const indexingManager = new IndexingManager(
+      sessionId,
+      sessionName,
+      files.length
+    );
     await indexingManager.init();
+
+    files.forEach((filePath, index) => {
+      console.log(filePath);
+
+      indexingManager.addTask({ fileId: uuid(), filePath, index });
+    });
+
     event.reply("embeddings-tip-update", "worker manager is online");
-    for await (const file of getAllImageFiles(`${directoryPath}/`)) {
-      indexingManager.addTask({ fileId: uuid(), filePath: file.path });
-    }
   });
 
   ipcMain.on("select-query-file", async (event) => {
     const res = await dialog.showOpenDialog(mainWindow as BrowserWindow, {
       properties: ["openFile"],
+      message: "Select Image",
     });
 
-    event.reply("selected-query-file", res);
+    const ext = extname(res.filePaths[0]);
+
+    if (
+      ext.toLocaleLowerCase() === ".jpg" ||
+      ext.toLocaleLowerCase() === ".jpeg" ||
+      ext === ".png"
+    ) {
+      event.reply("selected-query-file", res);
+    } else {
+      dialog.showErrorBox("Invalid file", "File should be either png or jpg");
+    }
   });
 
   // get faces from selected file

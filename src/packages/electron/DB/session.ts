@@ -3,6 +3,7 @@ import { Knex } from "knex";
 export interface SessionBlob {
   sessionId: string;
   indexFilePath: string;
+  sessionName: string;
 }
 
 export const createSessionIfNotExists = async (
@@ -15,6 +16,7 @@ export const createSessionIfNotExists = async (
       await knexInstance.schema.createTable("session", (table) => {
         table.integer("id").primary();
         table.string("sessionId");
+        table.string("sessionName");
         table.string("indexFilePath");
       });
 
